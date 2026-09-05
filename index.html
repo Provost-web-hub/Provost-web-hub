@@ -776,6 +776,12 @@ function renderConfirm(){
       <div class="stamp">Request Received</div>
       <h2>Thanks, ${esc(state.data.businessName)||'friend'}!</h2>
       <p>Your website preferences have been saved. We'll be in touch to get photos and any remaining details before building your site.</p>
+      <p class="hint" style="margin-top:16px;">Questions in the meantime? Reach us directly:</p>
+      <p style="font-size:14px; margin:4px 0 0 0;">
+        <a href="tel:5873703476" style="color:var(--ink); text-decoration:none;">587-370-3476</a>
+        &nbsp;·&nbsp;
+        <a href="mailto:judecockaday2000@gmail.com" style="color:var(--ink); text-decoration:none;">judecockaday2000@gmail.com</a>
+      </p>
       <p class="hint" style="margin-top:16px;">If you'd like, you can also send us a copy directly by email:</p>
       <div class="nav-row" style="justify-content:center; margin-top:10px;">
         <a class="btn primary" style="text-decoration:none; display:inline-block;" href="${buildMailtoLink(state.data)}">Email us this request</a>
