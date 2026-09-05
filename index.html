@@ -367,6 +367,31 @@
     margin-bottom:16px;
   }
   .loading{ font-size:13px; color:var(--sage); }
+
+  .modal-overlay{
+    position:fixed;
+    top:0; left:0; right:0; bottom:0;
+    background:rgba(31,45,61,0.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:1000;
+  }
+  .modal-box{
+    background:var(--paper);
+    border:2px solid var(--rust);
+    max-width:400px;
+    width:100%;
+    padding:24px;
+  }
+  .modal-box h3{ font-size:18px; margin-bottom:10px; }
+  .modal-box p{ font-size:14px; margin:0 0 18px 0; }
+  .modal-actions{
+    display:flex;
+    gap:10px;
+    justify-content:flex-end;
+  }
 </style>
 </head>
 <body>
@@ -427,6 +452,7 @@ let state = {
   view: 'form', // 'form' | 'confirm' | 'admin'
   loading: false,
   error: '',
+  pendingUpgrade: null, // { kind: 'section'|'extra', id: '...' } while confirmation modal is open
   data: {
     selectedPlan:'',
     businessName:'', category:'', description:'', phone:'', address:'', hoursText:'',
@@ -462,8 +488,47 @@ function render(){
     attachConfirmHandlers();
     return;
   }
-  app.innerHTML = renderMasthead() + renderTabs() + '<div class="card">' + renderStep() + '</div>' + renderNav() + renderAdminLink();
+  app.innerHTML = renderMasthead() + renderTabs() + '<div class="card">' + renderStep() + '</div>' + renderNav() + renderAdminLink() + renderUpgradeModal();
   attachHandlers();
+  attachUpgradeModalHandlers();
+}
+
+function renderUpgradeModal(){
+  if(!state.pendingUpgrade) return '';
+  const list = state.pendingUpgrade.kind === 'section' ? SECTIONS : EXTRAS;
+  const item = list.find(x=>x.id===state.pendingUpgrade.id);
+  const growthPlan = PLANS.find(p=>p.id==='growth');
+  return `
+    <div class="modal-overlay" id="upgradeModalOverlay">
+      <div class="modal-box">
+        <h3>Switch to the Growth plan?</h3>
+        <p>${esc(item ? item.label : 'This feature')} is only available on the Growth plan ($${growthPlan.upfront} upfront + $${growthPlan.monthly}/month). Adding it will switch your selected plan from Essential to Growth.</p>
+        <div class="modal-actions">
+          <button class="btn" id="upgradeCancelBtn">Cancel</button>
+          <button class="btn primary" id="upgradeConfirmBtn">Switch to Growth</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function attachUpgradeModalHandlers(){
+  const cancelBtn = document.getElementById('upgradeCancelBtn');
+  if(cancelBtn) cancelBtn.addEventListener('click', ()=>{
+    state.pendingUpgrade = null;
+    render();
+  });
+  const confirmBtn = document.getElementById('upgradeConfirmBtn');
+  if(confirmBtn) confirmBtn.addEventListener('click', ()=>{
+    const pending = state.pendingUpgrade;
+    if(pending){
+      state.data.selectedPlan = 'growth';
+      const arr = pending.kind === 'section' ? state.data.sections : state.data.extras;
+      if(!arr.includes(pending.id)) arr.push(pending.id);
+    }
+    state.pendingUpgrade = null;
+    render();
+  });
 }
 
 function renderMasthead(){
@@ -815,8 +880,7 @@ function attachHandlers(){
       const secId = item.dataset.section;
       const sec = SECTIONS.find(s=>s.id===secId);
       if(isLocked(sec)){
-        d.selectedPlan = 'growth';
-        if(!d.sections.includes(secId)) d.sections.push(secId);
+        state.pendingUpgrade = { kind: 'section', id: secId };
         render();
         return;
       }
@@ -832,8 +896,7 @@ function attachHandlers(){
       const exId = sw.dataset.extra;
       const ex = EXTRAS.find(x=>x.id===exId);
       if(isLocked(ex)){
-        d.selectedPlan = 'growth';
-        if(!d.extras.includes(exId)) d.extras.push(exId);
+        state.pendingUpgrade = { kind: 'extra', id: exId };
         render();
         return;
       }
