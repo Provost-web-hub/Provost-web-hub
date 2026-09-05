@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Provost Website Builder</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Work+Sans:wght@400;500;600&display=swap');
+
+  :root{
+    --ink:#1F2D3D;
+    --gold:#C99A2E;
+    --gold-dark:#A97F20;
+    --rust:#9C4A2E;
+    --paper:#EFE8D8;
+    --paper-dark:#E3DAC3;
+    --sage:#6B7B63;
+    --line: rgba(31,45,61,0.18);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    line-height:1.5;
+  }
+  h1,h2,h3{
+    font-family:'Fraunces', serif;
+    margin:0 0 0.3em 0;
+    font-weight:700;
+    letter-spacing:0.2px;
+  }
+  .app{
+    max-width:760px;
+    margin:0 auto;
+    padding:32px 20px 80px;
+  }
+  .masthead{
+    border-bottom:3px solid var(--ink);
+    padding-bottom:18px;
+    margin-bottom:28px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .masthead .title h1{
+    font-size:28px;
+    color:var(--ink);
+  }
+  .masthead .title p{
+    margin:2px 0 0 0;
+    color:var(--sage);
+    font-size:14px;
+  }
+  .masthead .count{
+    font-size:13px;
+    color:var(--ink);
+    text-align:right;
+    opacity:0.75;
+  }
+
+  .tabs{
+    display:flex;
+    gap:22px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:28px;
+    flex-wrap:wrap;
+  }
+  .tab{
+    background:none;
+    border:none;
+    font-family:'Work Sans', sans-serif;
+    font-size:14px;
+    font-weight:500;
+    color:var(--ink);
+    opacity:0.45;
+    padding:0 0 12px 0;
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+  }
+  .tab:hover{ opacity:0.8; }
+  .tab.active{
+    opacity:1;
+    border-bottom:2px solid var(--rust);
+  }
+  .tab.done{
+    opacity:0.75;
+  }
+
+  .card{
+    background:var(--paper-dark);
+    border:1px solid var(--line);
+    padding:26px 24px;
+  }
+  .field{
+    margin-bottom:18px;
+  }
+  label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:6px;
+    color:var(--ink);
+  }
+  input[type=text], input[type=tel], input[type=email], textarea, select{
+    width:100%;
+    padding:10px 11px;
+    font-family:'Work Sans', sans-serif;
+    font-size:14px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    color:var(--ink);
+  }
+  input:focus, textarea:focus, select:focus{
+    outline:2px solid var(--gold-dark);
+    outline-offset:1px;
+  }
+  textarea{ resize:vertical; min-height:70px; }
+  .hint{
+    font-size:12px;
+    color:var(--sage);
+    margin-top:5px;
+  }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:560px){ .grid2{ grid-template-columns:1fr; } }
+
+  /* Template style cards */
+  .style-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  @media (max-width:560px){ .style-grid{ grid-template-columns:1fr; } }
+  .style-card{
+    border:1px solid var(--line);
+    background:var(--paper);
+    padding:14px;
+    cursor:pointer;
+    text-align:left;
+  }
+  .style-card:hover{ border-color:var(--ink); }
+  .style-card.selected{
+    border:2px solid var(--rust);
+    padding:13px;
+  }
+  .style-mock{
+    height:70px;
+    border:1px solid var(--line);
+    margin-bottom:10px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    padding:6px;
+    background:#fff;
+  }
+  .mock-bar{ background:var(--ink); height:8px; width:40%; }
+  .mock-line{ background:var(--line); height:5px; }
+  .style-card h3{ font-size:15px; margin-bottom:3px; }
+  .style-card p{ font-size:12px; color:var(--sage); margin:0; }
+
+  /* classic mock: centered logo bar + rows */
+  .mock-classic .mock-bar{ width:50%; align-self:center; }
+  .mock-classic .mock-line{ width:80%; align-self:center; }
+  /* modern mock: left bar, offset lines */
+  .mock-modern .mock-bar{ width:30%; }
+  .mock-modern .mock-line{ width:60%; }
+  .mock-modern .mock-line:nth-child(3){ width:35%; }
+  /* bold mock: big block */
+  .mock-bold{ background:var(--gold); }
+  .mock-bold .mock-bar{ background:var(--ink); width:55%; height:14px; }
+  .mock-bold .mock-line{ background:rgba(31,45,61,0.4); }
+  /* rustic mock: framed */
+  .mock-rustic{ border:3px double var(--rust); }
+  .mock-rustic .mock-bar{ width:45%; align-self:center; background:var(--rust); }
+  .mock-rustic .mock-line{ width:70%; align-self:center; }
+  /* professional mock: tidy left-aligned grid */
+  .mock-professional{ display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:8px; }
+  .mock-professional .mock-bar{ grid-column:1/3; width:35%; height:7px; }
+  .mock-professional .mock-line{ height:18px; background:var(--paper-dark); }
+  /* playful mock: rounded scattered shapes */
+  .mock-playful{ position:relative; background:var(--paper-dark); }
+  .mock-playful .mock-bar{ background:var(--rust); width:26px; height:26px; border-radius:50%; margin:6px 0 0 8px; }
+  .mock-playful .mock-line{ background:var(--gold); height:10px; width:38%; border-radius:6px; margin-left:8px; }
+  .mock-playful .mock-line:nth-child(3){ background:var(--sage); width:24%; }
+
+  /* checkbox list */
+  .check-list{ display:flex; flex-direction:column; gap:10px; }
+  .check-item{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    cursor:pointer;
+  }
+  .check-item.selected{
+    border-color:var(--rust);
+    background:#fff;
+  }
+  .check-item.locked{
+    opacity:0.6;
+    cursor:pointer;
+  }
+  .check-item.locked:hover{ opacity:0.85; }
+  .lock-tag{
+    display:inline-block;
+    font-size:10px;
+    font-weight:600;
+    color:var(--rust);
+    border:1px solid var(--rust);
+    padding:1px 6px;
+    margin-left:8px;
+    vertical-align:middle;
+  }
+  .check-item input{ width:auto; margin-top:3px; }
+  .check-item .ci-text strong{ display:block; font-size:14px; }
+  .check-item .ci-text span{ font-size:12px; color:var(--sage); }
+
+  /* color palettes */
+  .palette-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:560px){ .palette-grid{ grid-template-columns:1fr; } }
+  .palette-card{
+    border:1px solid var(--line);
+    background:var(--paper);
+    padding:12px;
+    cursor:pointer;
+  }
+  .palette-card.selected{ border:2px solid var(--rust); padding:11px; }
+  .swatches{ display:flex; gap:0; margin-bottom:8px; }
+  .swatch{ flex:1; height:34px; }
+  .palette-card h3{ font-size:14px; margin-bottom:2px; }
+  .palette-card p{ font-size:12px; color:var(--sage); margin:0; }
+
+  /* plan cards */
+  .plan-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:560px){ .plan-grid{ grid-template-columns:1fr; } }
+  .plan-card{
+    border:1px solid var(--line);
+    background:var(--paper);
+    padding:18px;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+  }
+  .plan-card:hover{ border-color:var(--ink); }
+  .plan-card.selected{ border:2px solid var(--rust); padding:17px; }
+  .plan-card h3{ font-size:16px; margin-bottom:2px; }
+  .plan-price{
+    font-family:'Fraunces', serif;
+    font-size:26px;
+    color:var(--rust);
+    margin:8px 0 2px 0;
+  }
+  .plan-price span{ font-size:12px; font-family:'Work Sans', sans-serif; color:var(--ink); opacity:0.7; }
+  .plan-sub{ font-size:12px; color:var(--sage); margin-bottom:10px; }
+  .plan-card ul{ list-style:none; margin:0 0 4px 0; padding:0; font-size:13px; }
+  .plan-card li{ padding:5px 0; border-bottom:1px solid var(--line); }
+  .plan-card li:last-child{ border-bottom:none; }
+
+  .toggle-row.locked{ opacity:0.6; }
+  .toggle-row.locked:hover{ opacity:0.85; }
+  .toggle-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .toggle-row:last-child{ border-bottom:none; }
+  .toggle-row .tr-text strong{ display:block; font-size:14px; }
+  .toggle-row .tr-text span{ font-size:12px; color:var(--sage); }
+  .switch{
+    width:42px; height:24px;
+    background:var(--line);
+    border:none;
+    position:relative;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .switch.on{ background:var(--rust); }
+  .switch .knob{
+    position:absolute;
+    top:2px; left:2px;
+    width:20px; height:20px;
+    background:#fff;
+    transition:left 0.15s ease;
+  }
+  .switch.on .knob{ left:20px; }
+
+  .nav-row{
+    display:flex;
+    justify-content:space-between;
+    margin-top:26px;
+  }
+  button.btn{
+    font-family:'Work Sans', sans-serif;
+    font-size:14px;
+    font-weight:600;
+    padding:11px 22px;
+    border:1px solid var(--ink);
+    background:none;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  button.btn.primary{
+    background:var(--ink);
+    color:#fff;
+    border-color:var(--ink);
+  }
+  button.btn.primary:hover{ background:var(--rust); border-color:var(--rust); }
+  button.btn:hover{ background:var(--paper); }
+  button.btn:disabled{ opacity:0.35; cursor:default; }
+
+  /* review */
+  .review-block{ margin-bottom:18px; }
+  .review-block h3{ font-size:14px; margin-bottom:6px; color:var(--rust); }
+  .review-block ul{ margin:0; padding-left:18px; font-size:14px; }
+  .review-block p{ margin:0; font-size:14px; }
+
+  .confirm{
+    text-align:center;
+    padding:30px 10px;
+  }
+  .confirm .stamp{
+    display:inline-block;
+    border:3px solid var(--rust);
+    color:var(--rust);
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:20px;
+    padding:10px 22px;
+    transform:rotate(-3deg);
+    margin-bottom:18px;
+  }
+
+  .admin-link{
+    text-align:center;
+    margin-top:34px;
+    font-size:12px;
+  }
+  .admin-link a{ color:var(--sage); cursor:pointer; text-decoration:underline; }
+
+  .admin-list{ margin-top:20px; }
+  .admin-entry{
+    border:1px solid var(--line);
+    padding:14px 16px;
+    margin-bottom:12px;
+    background:var(--paper-dark);
+  }
+  .admin-entry h3{ font-size:16px; margin-bottom:4px; }
+  .admin-entry .meta{ font-size:12px; color:var(--sage); margin-bottom:8px; }
+  .admin-entry dl{ margin:0; font-size:13px; }
+  .admin-entry dt{ font-weight:600; margin-top:6px; }
+  .admin-entry dd{ margin:0 0 0 0; color:var(--ink); }
+
+  .error-msg{
+    background:#fff;
+    border:1px solid var(--rust);
+    color:var(--rust);
+    padding:10px 12px;
+    font-size:13px;
+    margin-bottom:16px;
+  }
+  .loading{ font-size:13px; color:var(--sage); }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+const STYLES = [
+  { id:'classic', name:'Classic Storefront', desc:'Centered, traditional, easy to read', mock:'mock-classic' },
+  { id:'modern', name:'Modern Minimal', desc:'Clean lines, lots of white space', mock:'mock-modern' },
+  { id:'bold', name:'Bold & Colorful', desc:'Big color blocks, eye-catching', mock:'mock-bold' },
+  { id:'rustic', name:'Rustic / Country', desc:'Warm, small-town, framed look', mock:'mock-rustic' },
+  { id:'professional', name:'Professional & Clean', desc:'Sharp and simple, good for services', mock:'mock-professional' },
+  { id:'playful', name:'Playful & Artsy', desc:'Friendly and expressive, good for boutiques', mock:'mock-playful' },
+];
+
+const SECTIONS = [
+  { id:'about', label:'About Us', desc:'Your story — how long you\'ve been around, what makes you different', tier:'essential' },
+  { id:'products', label:'Products / Menu', desc:'List of what you sell or serve', tier:'essential' },
+  { id:'hours', label:'Hours & Location', desc:'Map, address, and open hours', tier:'essential' },
+  { id:'contact', label:'Contact Form', desc:'Let customers message you directly from the site', tier:'essential' },
+  { id:'social', label:'Social Media Links', desc:'Links to Facebook, Instagram, etc.', tier:'essential' },
+  { id:'team', label:'Staff / Team Profiles', desc:'Introduce the people behind the counter', tier:'essential' },
+  { id:'gallery', label:'Photo Gallery', desc:'Photos of your shop, products, or work', tier:'growth' },
+  { id:'reviews', label:'Customer Reviews', desc:'Testimonials from happy customers', tier:'growth' },
+  { id:'promo', label:'Specials & Promotions', desc:'A spot to feature sales or seasonal offers', tier:'growth' },
+  { id:'faq', label:'FAQ', desc:'Answer common questions before customers have to ask', tier:'growth' },
+  { id:'blog', label:'Blog / News', desc:'Post updates, tips, or shop news', tier:'growth' },
+  { id:'events', label:'Events Calendar', desc:'List upcoming events, sales days, or workshops', tier:'growth' },
+];
+
+const PALETTES = [
+  { id:'wheat', name:'Wheat Field', desc:'Gold, ink, cream', colors:['#C99A2E','#1F2D3D','#EFE8D8'] },
+  { id:'barn', name:'Barn Rust', desc:'Rust, cream, sage', colors:['#9C4A2E','#EFE8D8','#6B7B63'] },
+  { id:'prairie-sky', name:'Prairie Sky', desc:'Deep blue, white, gold', colors:['#1F2D3D','#FFFFFF','#C99A2E'] },
+  { id:'sage', name:'Sage & Cream', desc:'Muted green, cream, ink', colors:['#6B7B63','#EFE8D8','#1F2D3D'] },
+  { id:'clay', name:'Clay & Cream', desc:'Rust, gold, cream', colors:['#9C4A2E','#C99A2E','#EFE8D8'] },
+  { id:'charcoal', name:'Charcoal & Gold', desc:'Charcoal, gold, white', colors:['#2B2B2B','#C99A2E','#FFFFFF'] },
+];
+
+const PLANS = [
+  { id:'essential', name:'Essential Business', upfront:300, monthly:49,
+    features:['Custom preference buildout','Fully responsive design','Secure website hosting','SSL security certificate','Up to 2 minor updates/month'] },
+  { id:'growth', name:'Growth & E-commerce', upfront:600, monthly:99,
+    features:['Everything in Essential','Advanced pages & features','Booking system or online store','Priority support','Up to 5 minor updates/month'] },
+];
+
+const EXTRAS = [
+  { id:'newsletter', label:'Newsletter Signup', desc:'Collect emails for updates and promotions', tier:'essential' },
+  { id:'ordering', label:'Online Ordering', desc:'Customers can order products online', tier:'growth' },
+  { id:'booking', label:'Appointment Booking', desc:'Customers can book a time slot online', tier:'growth' },
+  { id:'ecommerce', label:'Full Online Store', desc:'Sell products with a shopping cart & checkout', tier:'growth' },
+  { id:'livechat', label:'Live Chat Widget', desc:'Chat with website visitors in real time', tier:'growth' },
+  { id:'multilang', label:'Multi-Language Support', desc:'Show the site in more than one language', tier:'growth' },
+];
+
+let state = {
+  step: 1,
+  view: 'form', // 'form' | 'confirm' | 'admin'
+  loading: false,
+  error: '',
+  data: {
+    selectedPlan:'',
+    businessName:'', category:'', description:'', phone:'', address:'', hoursText:'',
+    style:'', sections:[], palette:'', extras:[]
+  }
+};
+
+function slugify(s){
+  return (s||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || 'shop';
+}
+
+function toggleArr(arr, id){
+  const i = arr.indexOf(id);
+  if(i>=0){ arr.splice(i,1); } else { arr.push(id); }
+  return arr;
+}
+
+function isLocked(item){
+  return item.tier === 'growth' && state.data.selectedPlan !== 'growth';
+}
+
+function setStep(n){ state.step = n; render(); window.scrollTo(0,0); }
+
+function render(){
+  const app = document.getElementById('app');
+  if(state.view === 'admin'){
+    app.innerHTML = renderAdmin();
+    attachAdminHandlers();
+    return;
+  }
+  if(state.view === 'confirm'){
+    app.innerHTML = renderConfirm();
+    attachConfirmHandlers();
+    return;
+  }
+  app.innerHTML = renderMasthead() + renderTabs() + '<div class="card">' + renderStep() + '</div>' + renderNav() + renderAdminLink();
+  attachHandlers();
+}
+
+function renderMasthead(){
+  return `
+    <div class="masthead">
+      <div class="title">
+        <h1>Provost Website Builder</h1>
+        <p>Tell us how you want your shop's website to look — takes about 3 minutes.</p>
+      </div>
+    </div>`;
+}
+
+function renderTabs(){
+  const labels = ['Plan','Business Info','Style','Pages','Colors','Add-ons','Review'];
+  return '<div class="tabs">' + labels.map((l,i)=>{
+    const n=i+1;
+    let cls='tab';
+    if(n===state.step) cls+=' active';
+    else if(n<state.step) cls+=' done';
+    return `<div class="${cls}" data-step="${n}">${l}</div>`;
+  }).join('') + '</div>';
+}
+
+function renderStep(){
+  switch(state.step){
+    case 1: return stepPlan();
+    case 2: return stepBasics();
+    case 3: return stepStyle();
+    case 4: return stepSections();
+    case 5: return stepColors();
+    case 6: return stepExtras();
+    case 7: return stepReview();
+  }
+}
+
+function stepPlan(){
+  return `
+    <h2>Choose a plan</h2>
+    <p class="hint" style="margin-bottom:16px;">This covers the buildout and ongoing hosting. Growth unlocks extra sections and features later in the form — you can switch plans anytime by tapping a locked item.</p>
+    <div class="plan-grid">
+      ${PLANS.map(p=>`
+        <div class="plan-card ${state.data.selectedPlan===p.id?'selected':''}" data-plan="${p.id}">
+          <h3>${p.name}</h3>
+          <div class="plan-price">$${p.upfront} <span>upfront</span></div>
+          <div class="plan-sub">+ $${p.monthly}/month hosting &amp; updates</div>
+          <ul>${p.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function stepBasics(){
+  const d = state.data;
+  return `
+    <h2>Tell us about your shop</h2>
+    <div class="field">
+      <label for="businessName">Business name</label>
+      <input type="text" id="businessName" value="${esc(d.businessName)}" placeholder="e.g. Prairie Rose Gifts">
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label for="category">Type of business</label>
+        <input type="text" id="category" value="${esc(d.category)}" placeholder="e.g. Clothing store, Hardware, Cafe">
+      </div>
+      <div class="field">
+        <label for="phone">Phone number</label>
+        <input type="tel" id="phone" value="${esc(d.phone)}" placeholder="(780) 555-0100">
+      </div>
+    </div>
+    <div class="field">
+      <label for="address">Address</label>
+      <input type="text" id="address" value="${esc(d.address)}" placeholder="5034 51st Avenue, Provost, AB">
+    </div>
+    <div class="field">
+      <label for="hoursText">Hours of operation</label>
+      <input type="text" id="hoursText" value="${esc(d.hoursText)}" placeholder="Mon-Fri 9am-5:30pm, Sat 10am-3pm">
+    </div>
+    <div class="field">
+      <label for="description">Short description of your business</label>
+      <textarea id="description" placeholder="What do you sell or do? What makes your shop special?">${esc(d.description)}</textarea>
+      <p class="hint">A couple sentences is plenty — this becomes your homepage intro.</p>
+    </div>
+  `;
+}
+
+function stepStyle(){
+  return `
+    <h2>Pick a style</h2>
+    <p class="hint" style="margin-bottom:16px;">This sets the overall feel of your site. You can always change it later.</p>
+    <div class="style-grid">
+      ${STYLES.map(s=>`
+        <div class="style-card ${state.data.style===s.id?'selected':''}" data-style="${s.id}">
+          <div class="style-mock ${s.mock}">
+            <div class="mock-bar"></div>
+            <div class="mock-line"></div>
+            <div class="mock-line"></div>
+          </div>
+          <h3>${s.name}</h3>
+          <p>${s.desc}</p>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function stepSections(){
+  return `
+    <h2>What should the site include?</h2>
+    <p class="hint" style="margin-bottom:16px;">Pick as many as you like. Items marked Growth are included with the Growth plan — tap one to switch plans and add it.</p>
+    <div class="check-list">
+      ${SECTIONS.map(s=>{
+        const locked = isLocked(s);
+        const on = state.data.sections.includes(s.id);
+        return `
+        <label class="check-item ${on?'selected':''} ${locked?'locked':''}" data-section="${s.id}">
+          <input type="checkbox" ${on?'checked':''} ${locked?'disabled':''}>
+          <span class="ci-text"><strong>${s.label}${locked?'<span class="lock-tag">Growth</span>':''}</strong><span>${s.desc}</span></span>
+        </label>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+function stepColors(){
+  return `
+    <h2>Choose a color palette</h2>
+    <div class="palette-grid">
+      ${PALETTES.map(p=>`
+        <div class="palette-card ${state.data.palette===p.id?'selected':''}" data-palette="${p.id}">
+          <div class="swatches">
+            ${p.colors.map(c=>`<div class="swatch" style="background:${c}"></div>`).join('')}
+          </div>
+          <h3>${p.name}</h3>
+          <p>${p.desc}</p>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function stepExtras(){
+  return `
+    <h2>Any extra features?</h2>
+    <p class="hint" style="margin-bottom:6px;">Most of these are included with the Growth plan — tap one to switch plans and add it.</p>
+    <div>
+      ${EXTRAS.map(e=>{
+        const on = state.data.extras.includes(e.id);
+        const locked = isLocked(e);
+        return `
+        <div class="toggle-row ${locked?'locked':''}" data-extra-row="${e.id}">
+          <div class="tr-text"><strong>${e.label}${locked?'<span class="lock-tag">Growth</span>':''}</strong><span>${e.desc}</span></div>
+          <button type="button" class="switch ${on?'on':''}" data-extra="${e.id}"><span class="knob"></span></button>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+function stepReview(){
+  const d = state.data;
+  const styleName = STYLES.find(s=>s.id===d.style)?.name || '—';
+  const paletteName = PALETTES.find(p=>p.id===d.palette)?.name || '—';
+  const sectionNames = d.sections.map(id=>SECTIONS.find(s=>s.id===id)?.label).filter(Boolean);
+  const extraNames = d.extras.map(id=>EXTRAS.find(e=>e.id===id)?.label).filter(Boolean);
+  const planObj = PLANS.find(p=>p.id===d.selectedPlan);
+  return `
+    <h2>Review your selections</h2>
+    ${state.error ? `<div class="error-msg">${esc(state.error)}</div>` : ''}
+    <div class="review-block">
+      <h3>Plan</h3>
+      <p>${planObj ? `${planObj.name} — $${planObj.upfront} upfront + $${planObj.monthly}/month` : '—'}</p>
+    </div>
+    <div class="review-block">
+      <h3>Business</h3>
+      <p><strong>${esc(d.businessName)||'(no name given)'}</strong> — ${esc(d.category)||'—'}</p>
+      <p>${esc(d.phone)||'—'} · ${esc(d.address)||'—'}</p>
+      <p>${esc(d.hoursText)||'—'}</p>
+      <p>${esc(d.description)||'—'}</p>
+    </div>
+    <div class="review-block">
+      <h3>Look</h3>
+      <p>${styleName}</p>
+    </div>
+    <div class="review-block">
+      <h3>Sections</h3>
+      ${sectionNames.length ? `<ul>${sectionNames.map(n=>`<li>${n}</li>`).join('')}</ul>` : '<p>None selected</p>'}
+    </div>
+    <div class="review-block">
+      <h3>Colors</h3>
+      <p>${paletteName}</p>
+    </div>
+    <div class="review-block">
+      <h3>Extra features</h3>
+      ${extraNames.length ? `<ul>${extraNames.map(n=>`<li>${n}</li>`).join('')}</ul>` : '<p>None selected</p>'}
+    </div>
+    ${state.loading ? '<p class="loading">Saving your request…</p>' : ''}
+  `;
+}
+
+function renderNav(){
+  const isFirst = state.step===1;
+  const isLast = state.step===7;
+  return `
+    <div class="nav-row">
+      <button class="btn" id="backBtn" ${isFirst?'disabled':''}>Back</button>
+      <button class="btn primary" id="nextBtn">${isLast ? 'Submit request' : 'Next'}</button>
+    </div>
+  `;
+}
+
+function renderAdminLink(){
+  return `<div class="admin-link"><a id="adminLink">View all submitted requests</a></div>`;
+}
+
+function buildMailtoLink(d){
+  const planObj = PLANS.find(p=>p.id===d.selectedPlan);
+  const sectionNames = (d.sections||[]).map(id=>SECTIONS.find(s=>s.id===id)?.label).filter(Boolean);
+  const extraNames = (d.extras||[]).map(id=>EXTRAS.find(e=>e.id===id)?.label).filter(Boolean);
+  const styleName = STYLES.find(s=>s.id===d.style)?.name || '—';
+  const paletteName = PALETTES.find(p=>p.id===d.palette)?.name || '—';
+  const subject = 'Website request: ' + (d.businessName || 'Unnamed shop');
+  const bodyLines = [
+    'Business name: ' + (d.businessName || '—'),
+    'Category: ' + (d.category || '—'),
+    'Phone: ' + (d.phone || '—'),
+    'Address: ' + (d.address || '—'),
+    'Hours: ' + (d.hoursText || '—'),
+    'Description: ' + (d.description || '—'),
+    '',
+    'Plan: ' + (planObj ? `${planObj.name} — $${planObj.upfront} upfront + $${planObj.monthly}/mo` : '—'),
+    'Style: ' + styleName,
+    'Sections: ' + (sectionNames.join(', ') || '—'),
+    'Colors: ' + paletteName,
+    'Extras: ' + (extraNames.join(', ') || '—'),
+  ];
+  const body = bodyLines.join('\n');
+  return 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+}
+
+function renderConfirm(){
+  return `
+    <div class="masthead"><div class="title"><h1>Provost Website Builder</h1></div></div>
+    <div class="card confirm">
+      <div class="stamp">Request Received</div>
+      <h2>Thanks, ${esc(state.data.businessName)||'friend'}!</h2>
+      <p>Your website preferences have been saved. We'll be in touch to get photos and any remaining details before building your site.</p>
+      <p class="hint" style="margin-top:16px;">If you'd like, you can also send us a copy directly by email:</p>
+      <div class="nav-row" style="justify-content:center; margin-top:10px;">
+        <a class="btn primary" style="text-decoration:none; display:inline-block;" href="${buildMailtoLink(state.data)}">Email us this request</a>
+      </div>
+      <div class="nav-row" style="justify-content:center; margin-top:14px;">
+        <button class="btn" id="anotherBtn">Submit another shop</button>
+      </div>
+    </div>
+    <div class="admin-link"><a id="adminLink2">View all submitted requests</a></div>
+  `;
+}
+
+function renderAdmin(){
+  return `
+    <div class="masthead">
+      <div class="title"><h1>Submitted Requests</h1><p>Every shop that has filled out the form so far.</p></div>
+    </div>
+    <div id="adminBody"><p class="loading">Loading…</p></div>
+    <div class="nav-row" style="justify-content:center;">
+      <button class="btn" id="backToFormBtn">Back to form</button>
+    </div>
+  `;
+}
+
+async function loadAdminList(){
+  const body = document.getElementById('adminBody');
+  try{
+    const list = await window.storage.list('submission:', true);
+    if(!list || !list.keys || list.keys.length===0){
+      body.innerHTML = '<p>No submissions yet.</p>';
+      return;
+    }
+    const entries = [];
+    for(const key of list.keys){
+      try{
+        const res = await window.storage.get(key, true);
+        if(res && res.value){
+          entries.push(JSON.parse(res.value));
+        }
+      }catch(e){ /* skip unreadable entry */ }
+    }
+    entries.sort((a,b)=> (b.submittedAt||'').localeCompare(a.submittedAt||''));
+    if(entries.length===0){
+      body.innerHTML = '<p>No submissions yet.</p>';
+      return;
+    }
+    body.innerHTML = '<div class="admin-list">' + entries.map(e=>`
+      <div class="admin-entry">
+        <h3>${esc(e.businessName)||'(unnamed)'}</h3>
+        <div class="meta">${esc(e.category)||'—'} · submitted ${e.submittedAt ? new Date(e.submittedAt).toLocaleString() : '—'}</div>
+        <dl>
+          <dt>Plan</dt><dd>${(()=>{ const p=PLANS.find(pl=>pl.id===e.selectedPlan); return p ? `${p.name} — $${p.upfront} upfront + $${p.monthly}/mo` : '—'; })()}</dd>
+          <dt>Contact</dt><dd>${esc(e.phone)||'—'} · ${esc(e.address)||'—'}</dd>
+          <dt>Hours</dt><dd>${esc(e.hoursText)||'—'}</dd>
+          <dt>Description</dt><dd>${esc(e.description)||'—'}</dd>
+          <dt>Style</dt><dd>${esc(STYLES.find(s=>s.id===e.style)?.name || '—')}</dd>
+          <dt>Sections</dt><dd>${(e.sections||[]).map(id=>SECTIONS.find(s=>s.id===id)?.label).filter(Boolean).join(', ') || '—'}</dd>
+          <dt>Colors</dt><dd>${esc(PALETTES.find(p=>p.id===e.palette)?.name || '—')}</dd>
+          <dt>Extras</dt><dd>${(e.extras||[]).map(id=>EXTRAS.find(x=>x.id===id)?.label).filter(Boolean).join(', ') || '—'}</dd>
+        </dl>
+      </div>
+    `).join('') + '</div>';
+  }catch(err){
+    body.innerHTML = '<div class="error-msg">Could not load submissions. Please try again.</div>';
+  }
+}
+
+function esc(s){
+  if(s===undefined || s===null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function attachHandlers(){
+  const d = state.data;
+  const bind = (id, field) => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('input', ()=>{ d[field] = el.value; });
+  };
+  bind('businessName','businessName');
+  bind('category','category');
+  bind('phone','phone');
+  bind('address','address');
+  bind('hoursText','hoursText');
+  bind('description','description');
+
+  document.querySelectorAll('.plan-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      d.selectedPlan = card.dataset.plan;
+      if(d.selectedPlan !== 'growth'){
+        d.sections = d.sections.filter(id => SECTIONS.find(s=>s.id===id)?.tier !== 'growth');
+        d.extras = d.extras.filter(id => EXTRAS.find(x=>x.id===id)?.tier !== 'growth');
+      }
+      render();
+    });
+  });
+  document.querySelectorAll('.style-card').forEach(card=>{
+    card.addEventListener('click', ()=>{ d.style = card.dataset.style; render(); });
+  });
+  document.querySelectorAll('.check-item').forEach(item=>{
+    item.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const secId = item.dataset.section;
+      const sec = SECTIONS.find(s=>s.id===secId);
+      if(isLocked(sec)){
+        d.selectedPlan = 'growth';
+        if(!d.sections.includes(secId)) d.sections.push(secId);
+        render();
+        return;
+      }
+      toggleArr(d.sections, secId);
+      render();
+    });
+  });
+  document.querySelectorAll('.palette-card').forEach(card=>{
+    card.addEventListener('click', ()=>{ d.palette = card.dataset.palette; render(); });
+  });
+  document.querySelectorAll('.switch').forEach(sw=>{
+    sw.addEventListener('click', ()=>{
+      const exId = sw.dataset.extra;
+      const ex = EXTRAS.find(x=>x.id===exId);
+      if(isLocked(ex)){
+        d.selectedPlan = 'growth';
+        if(!d.extras.includes(exId)) d.extras.push(exId);
+        render();
+        return;
+      }
+      toggleArr(d.extras, exId);
+      render();
+    });
+  });
+
+  document.querySelectorAll('.tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{ setStep(parseInt(tab.dataset.step, 10)); });
+  });
+
+  const backBtn = document.getElementById('backBtn');
+  if(backBtn) backBtn.addEventListener('click', ()=>{ if(state.step>1) setStep(state.step-1); });
+
+  const nextBtn = document.getElementById('nextBtn');
+  if(nextBtn) nextBtn.addEventListener('click', ()=>{
+    if(state.step<7){ setStep(state.step+1); }
+    else { submitForm(); }
+  });
+
+  const adminLink = document.getElementById('adminLink');
+  if(adminLink) adminLink.addEventListener('click', ()=>{ state.view='admin'; render(); loadAdminList(); });
+}
+
+function attachConfirmHandlers(){
+  const anotherBtn = document.getElementById('anotherBtn');
+  if(anotherBtn) anotherBtn.addEventListener('click', ()=>{
+    state.data = { selectedPlan:'', businessName:'', category:'', description:'', phone:'', address:'', hoursText:'', style:'', sections:[], palette:'', extras:[] };
+    state.step = 1;
+    state.view = 'form';
+    state.error = '';
+    render();
+  });
+  const adminLink2 = document.getElementById('adminLink2');
+  if(adminLink2) adminLink2.addEventListener('click', ()=>{ state.view='admin'; render(); loadAdminList(); });
+}
+
+function attachAdminHandlers(){
+  const backToFormBtn = document.getElementById('backToFormBtn');
+  if(backToFormBtn) backToFormBtn.addEventListener('click', ()=>{ state.view='form'; render(); });
+}
+
+async function submitForm(){
+  state.loading = true;
+  state.error = '';
+  render();
+
+  const slug = slugify(state.data.businessName);
+  const key = 'submission:' + slug + '-' + Date.now();
+  const payload = Object.assign({}, state.data, { submittedAt: new Date().toISOString() });
+
+  // Save to shared storage — best effort. If the storage backend hiccups,
+  // it must not stop the person from successfully submitting.
+  let storageOk = true;
+  try{
+    const result = await window.storage.set(key, JSON.stringify(payload), true);
+    if(!result){ storageOk = false; console.error('window.storage.set returned falsy for key:', key); }
+  }catch(err){
+    storageOk = false;
+    console.error('window.storage.set failed:', err);
+  }
+
+  // Email a copy via Formspree. Note: this fetch is blocked while previewing
+  // inside the Claude artifact sandbox (no outbound network access there),
+  // but works normally once this file is hosted on a real web server.
+  try{
+    const planObj = PLANS.find(p=>p.id===payload.selectedPlan);
+    const sectionNames = (payload.sections||[]).map(id=>SECTIONS.find(s=>s.id===id)?.label).filter(Boolean);
+    const extraNames = (payload.extras||[]).map(id=>EXTRAS.find(e=>e.id===id)?.label).filter(Boolean);
+    const styleName = STYLES.find(s=>s.id===payload.style)?.name || '—';
+    const paletteName = PALETTES.find(p=>p.id===payload.palette)?.name || '—';
+    fetch('https://formspree.io/f/xjyvozdy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        _subject: 'New website request: ' + (payload.businessName || 'Unnamed shop'),
+        'Business name': payload.businessName || '—',
+        'Category': payload.category || '—',
+        'Phone': payload.phone || '—',
+        'Address': payload.address || '—',
+        'Hours': payload.hoursText || '—',
+        'Description': payload.description || '—',
+        'Plan': planObj ? `${planObj.name} — $${planObj.upfront} upfront + $${planObj.monthly}/mo` : '—',
+        'Style': styleName,
+        'Sections': sectionNames.join(', ') || '—',
+        'Colors': paletteName,
+        'Extras': extraNames.join(', ') || '—',
+      })
+    }).then(()=>console.log('Email notification sent to Formspree.'))
+      .catch(e=>console.warn('Email notification did not go through (expected while previewing in Claude):', e));
+  }catch(e){
+    console.error('Email notification setup failed:', e);
+  }
+
+  state.loading = false;
+  state.view = 'confirm';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
